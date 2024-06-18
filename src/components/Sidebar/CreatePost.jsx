@@ -29,16 +29,14 @@ import usePostStore from "../../store/postStore";
 import useUserProfileStore from "../../store/userProfileStore";
 import { useLocation } from "react-router-dom";
 import {
-  Firestore,
   addDoc,
   arrayUnion,
   collection,
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { ref } from "firebase/database";
-import { storage } from "../../firebase/firebase";
-import { getDownloadURL, uploadString } from "firebase/storage";
+import { firestore, storage } from "../../firebase/firebase";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
 
 const CreatePost = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -50,9 +48,10 @@ const CreatePost = () => {
 
   const handlePostCreation = async () => {
     try {
-
-      await 
-
+      await handleCreatePost(selectedFile, caption);
+      onClose();
+      setCaption("");
+      setSelectedFile(null);
     } catch (error) {
       showToast("Error", error.message, "error");
     }
@@ -161,9 +160,12 @@ function useCreatePost() {
   const authUser = useAuthStore((state) => state.user);
   const createPost = usePostStore((state) => state.createPost);
   const addPost = useUserProfileStore((state) => state.addPost);
+  const userProfile = useUserProfileStore((state) => state.userProfile);
+
   const { pathname } = useLocation();
 
   const handleCreatePost = async (selectedFile, caption) => {
+    if (isLoading) return;
     if (!selectedFile) throw new Error("Please select an image");
     setIsLoading(true);
 
@@ -176,8 +178,8 @@ function useCreatePost() {
     };
 
     try {
-      const postDocRef = await addDoc(collection(Firestore, "posts"), newPost);
-      const userDocRef = doc(Firestore, "users", authUser.uid);
+      const postDocRef = await addDoc(collection(firestore, "posts"), newPost);
+      const userDocRef = doc(firestore, "users", authUser.uid);
       const imageRef = ref(storage, `posts/${postDocRef.id}`);
       await updateDoc(userDocRef, { posts: arrayUnion(postDocRef.id) });
       await uploadString(imageRef, selectedFile, "data_url");
@@ -186,15 +188,19 @@ function useCreatePost() {
 
       newPost.imageURL = downloadURL;
 
-      createPost({
-        ...newPost,
-        id: postDocRef.id,
-      });
+      if (userProfile.uid === authUser.uid) {
+        createPost({
+          ...newPost,
+          id: postDocRef.id,
+        });
+      }
 
-      addPost({
-        ...newPost,
-        id: postDocRef.id,
-      });
+      if (pathname !== "/" && userProfile.uid === authUser.uid) {
+        addPost({
+          ...newPost,
+          id: postDocRef.id,
+        });
+      }
 
       showToast("Success", "Post created successfully", "success");
     } catch (error) {
