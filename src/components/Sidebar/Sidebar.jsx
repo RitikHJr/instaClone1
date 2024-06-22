@@ -43,7 +43,7 @@ const Sidebar = () => {
         >
           <InstagramMobileLogo />
         </Link>
-        <Flex direction={"column"} gap={5} cursor={"pointer"}>
+        <Flex direction={"column"} gap={5}>
           <SidebarItems />
         </Flex>
         {/* LOGOUT  */}

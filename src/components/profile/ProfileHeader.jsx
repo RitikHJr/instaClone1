@@ -32,7 +32,7 @@ const ProfileHeader = () => {
       direction={{ base: "column", sm: "row" }}
     >
       <AvatarGroup
-        size={{ base: "xs", md: "2xl" }}
+        size={{ base: "md", md: "2xl" }}
         justifySelf={"center"}
         alignSelf={"flex-start"}
         mx={"auto"}

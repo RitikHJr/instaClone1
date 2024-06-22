@@ -137,7 +137,7 @@ const ProfilePost = ({ post }) => {
               <Flex
                 borderRadius={4}
                 overflow={"hidden"}
-                border={"1px solid"}
+                border={{ base: "none", md: "1px solid" }}
                 borderColor={"whiteAlpha.300"}
                 flex={1.5}
                 justifyContent={"center"}
